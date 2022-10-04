@@ -47,6 +47,19 @@ export const StartServer = async () => {
     });
   })
 
+  app.get('/calcul', (nbr1:number, nbr2:number, res:any) => {
+    const total = nbr1 * nbr2;
+    res.json ({
+      result: total
+    })
+  })
+
+  app.get('/players', (usersList: Array<String>, res:any) => {
+    res.json ({
+      usersList: usersList
+    })
+  })
+
   // Lancer le serveur
   return new Promise<Server>(
     (resolve) => {
