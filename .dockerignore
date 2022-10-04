@@ -1,0 +1,9 @@
+.devcontainer
+.vscode
+build
+dbms/*-data
+node_modules
+stage
+docker-compose.*
+Dockerfile.*
+nodemon.*

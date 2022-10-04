@@ -1,0 +1,144 @@
+# "stages" décrit les différents étapes de notre déroulé (pipeline)
+stages:  
+  - test
+  - build
+  - e2e-test   
+cache:
+  paths:
+    - node_modules/
+
+unit-testing-job:      
+  stage: test        # chaque tâche doit préciser le "stage" dans lequel il se trouve
+  image: node:18     # l'image docker à utiliser pour éxecuter notre code    
+  tags:              # le tag du "runner" à utiliser
+    - node-build
+  only:              # précise les conditions d'éxecution de cette tâche
+    - master         
+    - main
+    - merge_requests
+    - production
+  artifacts:         # quels sont les fichiers sortant de cette tâche
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/unit/cobertura-coverage.xml
+  coverage: '/Statements\s*: \d+\.\d+/'
+  script:           # les instructions à éxecuter dans le conteneur Docker
+    - echo "Compiling the code..."
+    - npm install
+    - echo "Running unit tests..."
+    - npm run unit    
+    - echo "Complete."
+
+integration-testing-job:      
+  stage: test       # Cette tâche va tourner dans l'étape test, en parallèle de l'autre test
+  image: node:18
+  tags:
+    - node-build
+  only:
+    - master     
+    - main
+    - merge_requests
+    - production
+  services:        # On peut préciser les services externes, comme dans un docker-compose.yml
+    - name: mariadb:10
+      alias: test-dbms      
+      command: [
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_unicode_ci"
+      ]
+      variables:  # Les variables pour initialiser MariaDB (normalement les contenus du .env)
+        MYSQL_ALLOW_EMPTY_PASSWORD: "false" 
+        MYSQL_ROOT_PASSWORD: "dbms-dev-password"
+        MYSQL_DATABASE: "mtdb_test"     
+        FF_NETWORK_PER_BUILD: "true" 
+  variables:      # Les variables d'environnement pour nos tests
+    DB_HOST: "test-dbms"                    # Le nom d'hôte est le alias du service ci-dessus
+    DB_DATABASE: "mtdb_test"                # Le même nom que dans MYSQL_DATABASE
+    DB_ROOT_USER: "root"
+    DB_ROOT_PASSWORD: "dbms-dev-password"   # La même valeur que dans MYSQL_ROOT_PASSWORD
+    DB_USER: "api-test"                     # La même valeur qu'on utilise dans dbms/test-initdb.d/001-init-test.sql
+    DB_PASSWORD: "api-test-password"        # La même valeur qu'on utilise dans dbms/test-initdb.d/001-init-test.sql
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/integration/cobertura-coverage.xml
+  coverage: '/Statements\s*: \d+\.\d+/'
+  script:
+    - echo "Compiling the code..."
+    - npm install
+    - echo "Running integrations test..."
+    - npm run integration-no-env            # Notez qu'on tourne la version *-no-env, puisqu'on fournit le variables ci-dessus
+    - echo "Complete."
+
+build-job:
+  stage: build      # seulement dans le "build" stage
+  tags:
+    - docker        # on va utiliser un Runner dédié à builder les images Docker
+  only:
+    - master
+    - main
+    - merge_requests
+    - production
+  image: docker:20.10.16      # L'image pour construire est docker (qui aura la commande docker dedans)
+  services:                   # On va appeler au Docker Daemon, ce service nous en donne accès
+    - name: docker:20.10.16-dind
+      alias: docker
+  variables:                  # On va créer une image docker utilisant des variables fournis par Gitlab
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/api-$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA
+  script:
+    # Se connecter à Gitlab
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo "Building docker image..."
+    # Créer l'image docker
+    - docker build --pull -t $IMAGE_TAG -f ./Dockerfile.prod .
+    # Envoyer l'image docker dans notre Container Registry sur Gitlab
+    - docker push $IMAGE_TAG
+    - echo "Done."
+
+e2e-test-job:
+  stage: e2e-test
+  tags:
+    - node-build  
+  only:
+    - master
+    - main
+    - merge_requests
+    - production
+  services:
+    # Notre service MariaDB, configuré comme avant
+    - name: mariadb:10        
+      alias: test-dbms      
+      command: [
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_unicode_ci"
+      ]
+      variables: 
+        MYSQL_ALLOW_EMPTY_PASSWORD: "false"
+        MYSQL_ROOT_PASSWORD: "dbms-dev-password"
+        MYSQL_DATABASE: "mtdb_test"     
+    # On récupère l'image de notre API qu'on avait compilé dans l'étape "build", et on le lance comme service
+    - name:  $CI_REGISTRY_IMAGE/api-$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA
+      alias: mtdb-api     # on l'appelle mtdb-api
+      # Ici, le variables de connection pour que notre API puisse parler avec MariaDB 
+      # Attention à donner les bons accès à l'utilisateur api
+      variables:
+        DB_HOST: "test-dbms"
+        DB_DATABASE: "mtdb_test"
+        DB_USER: "api-test"
+        DB_PASSWORD: "api-test-password"
+        PORT: 5150
+  # Ici, les variables pour nos tests
+  # Notez qu'on a pas besoin du nom d'utilisateur de l'api, seulement le ROOT pour pouvoir vider et recréer la base de test
+  variables:
+    FF_NETWORK_PER_BUILD: "true"
+    DB_HOST: "test-dbms"
+    DB_DATABASE: "mtdb_test"
+    DB_ROOT_USER: "root"
+    DB_ROOT_PASSWORD: "dbms-dev-password"
+    API_HOST: "http://mtdb-api:5150"    # Attention le nom d'hôte correspond à l'alias de notre service
+  script:
+    - npm install  
+    - npm run swagger
+    - npm run e2e-no-env 

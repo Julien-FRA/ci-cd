@@ -1,0 +1,315 @@
+{
+	"info": {
+		"_postman_id": "a200344d-81fe-4cd9-ab6c-5396c5115790",
+		"name": "heticmt1",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1541882"
+	},
+	"item": [
+		{
+			"name": "Create user",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Blah blah",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"familyName\": \"Glass\",\n    \"givenName\": 1234,\n    \"email\": \"kevin@bobby.com\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/auth/user",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"auth",
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update user",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Blah blah",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"familyName\": \"Glasssss\",\n    \"givenName\": \"Kevinnnn\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/auth/user/1",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"auth",
+						"user",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Upload User File",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Blah blah",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/Users/kevin/Pictures/Crumpets.JPG"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{URL}}/auth/user/4/file",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"auth",
+						"user",
+						"4",
+						"file"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Download User File",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Blah blah",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/auth/user/15/file/3",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"auth",
+						"user",
+						"15",
+						"file",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Index User Files",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Blah blah",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/auth/user/1/file",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"auth",
+						"user",
+						"1",
+						"file"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read User",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Blah blah",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"familyName\": \"Glasssss\",\n    \"givenName\": \"Kevinnnn\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/auth/user/1",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"auth",
+						"user",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete user",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Blah blah",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"familyName\": \"Glasssss\",\n    \"givenName\": \"Kevinnnn\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/auth/user/15",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"auth",
+						"user",
+						"15"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Index User",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Blah blah",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/auth/user?limit=2&page=0",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"auth",
+						"user"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "2"
+						},
+						{
+							"key": "page",
+							"value": "0"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "URL",
+			"value": "http://localhost:5060",
+			"type": "string"
+		},
+		{
+			"value": null,
+			"type": "string",
+			"disabled": true
+		}
+	]
+}
