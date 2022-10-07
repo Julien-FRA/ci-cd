@@ -81,3 +81,9 @@ create table if not exists advert_view (
   foreign key(advertiserId) references advertiser(advertiserId),
   foreign key(userId) references user(userId)  
 );
+
+create table if not exists sport (
+  sportId int auto_increment not null,
+  category varchar(256) not null, 
+  primary key(sportId)
+);

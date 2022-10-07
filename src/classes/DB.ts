@@ -7,7 +7,7 @@ import mysql, { Pool } from 'mysql2/promise';
 export class DB {
 
   // Variable "static": une seule instance pour toutes les instances de la classe DB
-  private static POOL: Pool;
+  private static POOL: Pool | undefined;
 
   /**
    * Récupérer ou créer la connexion-pool.
@@ -28,6 +28,7 @@ export class DB {
   static async Close() {
     if (this.POOL) {
       await this.POOL.end();
+      this.POOL = undefined;
     }
   }
 

@@ -2,7 +2,9 @@
 stages:  
   - test
   - build
-  - e2e-test   
+  - e2e-test
+  - publish
+  - deploy   
 cache:
   paths:
     - node_modules/
@@ -17,6 +19,7 @@ unit-testing-job:
     - main
     - merge_requests
     - production
+    - dev
   artifacts:         # quels sont les fichiers sortant de cette tâche
     reports:
       coverage_report:
@@ -40,6 +43,7 @@ integration-testing-job:
     - main
     - merge_requests
     - production
+    - dev
   services:        # On peut préciser les services externes, comme dans un docker-compose.yml
     - name: mariadb:10
       alias: test-dbms      
@@ -81,6 +85,7 @@ build-job:
     - main
     - merge_requests
     - production
+    - dev
   image: docker:20.10.16      # L'image pour construire est docker (qui aura la commande docker dedans)
   services:                   # On va appeler au Docker Daemon, ce service nous en donne accès
     - name: docker:20.10.16-dind
@@ -106,6 +111,7 @@ e2e-test-job:
     - main
     - merge_requests
     - production
+    - dev
   services:
     # Notre service MariaDB, configuré comme avant
     - name: mariadb:10        
@@ -142,3 +148,36 @@ e2e-test-job:
     - npm install  
     - npm run swagger
     - npm run e2e-no-env 
+
+publish-job:
+  stage: publish
+  tags:
+    - docker
+  only:
+    - production
+  image: docker:20.10.16
+  services:
+    - name: docker:20.10.16-dind
+      alias: docker
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/api-$CI_COMMIT_REF_NAME:$CI_COMMIT_SHORT_SHA
+    LATEST_TAG: $CI_REGISTRY_IMAGE/api:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo "Retagging docker image..."
+    - docker tag $IMAGE_TAG $LATEST_TAG     # Elever notre image au tag "latest"
+    - echo "Push image with latest tag..."
+    - docker push $LATEST_TAG               # Envoyer l'image à notre Container Repository
+    - echo "Done."
+
+deploy-job:
+  stage: deploy
+  tags:
+    - node-build  
+  only:
+    - production
+  image: alpine:latest
+  script:    
+    - chmod og= $ID_RSA
+    - apk update && apk add openssh-client
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SWARM_MASTER_USER@$SWARM_MASTER_IP "docker service update --image $CI_REGISTRY_IMAGE/api:latest mtdb_prod-api  --with-registry-auth"

@@ -6,6 +6,7 @@ import { requestLogMiddleware } from './classes/Logging/LoggingMiddleware';
 import { DefaultErrorHandler } from './middleware/error-handler';
 import { RegisterRoutes } from './routes/routes';
 import { hostname, platform, type } from 'os';
+import { Calcul } from './classes/Calcul/Calcul'
 
 export const StartServer = async () => {
   // Récupérer le port des variables d'environnement ou préciser une valeur par défaut
@@ -43,14 +44,15 @@ export const StartServer = async () => {
       title: "NodeJS Boilerplate API",
       host: hostname(),
       platform: platform(),
-      type: type()
+      type: type(),
+      message: 'CI/CD check'
     });
   })
 
-  app.get('/calcul', (nbr1:number, nbr2:number, res:any) => {
-    const total = nbr1 * nbr2;
-    res.json ({
-      result: total
+  app.post('/calcul', (req, res) => {
+    const calcul = new Calcul(req.body.nb1, req.body.nb2);
+    res.json({
+      result: calcul.getCalcul() 
     })
   })
 
@@ -70,8 +72,6 @@ export const StartServer = async () => {
       })     
     }
   );  
-
-  
 }
 
 export const StopServer = async (server: Server|undefined) => {

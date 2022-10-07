@@ -12,11 +12,11 @@
     "clean": "rimraf build",
     "build": "npm run clean && npm run swagger && tsc && copyfiles public/**/* build/",
     "start-api": "node ./build/api.js",
-    "unit": "nyc --report-dir ./coverage/unit mocha -r ts-node/register -r source-map-support/register --recursive \"test/unit/suites/**/*.test.ts\"",
+    "unit": "nyc --report-dir ./coverage/unit mocha --timeout 10000 -r ts-node/register -r source-map-support/register --recursive \"test/unit/suites/**/*.test.ts\"",
     "integration": "env-cmd -f ./test/.env.test npm run integration-no-env",
-    "integration-no-env": "nyc --report-dir ./coverage/integration mocha -r ts-node/register -r source-map-support/register --recursive \"test/integration/suites/**/*.test.ts\"",
+    "integration-no-env": "nyc --report-dir ./coverage/integration mocha --timeout 10000 -r ts-node/register -r source-map-support/register --recursive \"test/integration/suites/**/*.test.ts\"",
     "e2e": "env-cmd -f ./test/.env.test npm run e2e-no-env",
-    "e2e-no-env": "mocha -r ts-node/register \"test/e2e/suites/**/*.test.ts\""
+    "e2e-no-env": "mocha --timeout 10000 -r ts-node/register \"test/e2e/suites/**/*.test.ts\""
   },
   "author": "",
   "license": "ISC",

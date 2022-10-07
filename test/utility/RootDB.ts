@@ -21,7 +21,7 @@ export class RootDB {
     };
     const POOL = mysql.createPool(config);
 
-    const setup = await readFile(join('dbms', 'test-initdb.d', '001-init-test.sql'), { encoding: 'utf-8'});    
+    const setup = await readFile(join('dbms', 'test-initdb.d', '001-init-test.sql'), { encoding: 'utf-8'});  
     await POOL.query(setup);
 
     const ddl = await readFile(join('dbms', 'ddl', 'ddl.sql'), { encoding: 'utf-8'});
